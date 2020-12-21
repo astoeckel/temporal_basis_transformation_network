@@ -97,6 +97,13 @@ class TemporalBasisTrafo(keras.layers.Layer):
         self.pad = tf.constant([[0, 0], [self.N - 1, 0], [0, 0]],
                                dtype='int32')
 
+    def get_config(self):
+        return {
+            "q": self.q,
+            "N": self.N,
+            "n_units": self.n_units
+        }
+
     @staticmethod
     def _intermediate_and_output_shape_and_perms(S, n_units, q, N):
         """
