@@ -203,10 +203,10 @@ class TemporalBasisTrafo(keras.layers.Layer):
 
         # Pad the second input dimension (corresponding to the input samples)
         # so we have 2 * N - 1 input samples.
-        xs_padded = tf.pad(xs_reshaped, self.pad)
+        xs_padded = tf.pad(xs_reshaped, self.pad, name='basis_trafo_pad')
 
         # Compute the convolution with the basis transformation matrix H.
-        ys = tf.nn.convolution(xs_padded, self.H)
+        ys = tf.nn.convolution(xs_padded, self.H, name='basis_trafo_conv')
 
         # Now reshape the output to the output dimensions we computed above and
         # permute the dimensions back so they match the desired input shape.
