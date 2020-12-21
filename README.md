@@ -6,11 +6,16 @@ a “generalised Fourier transformation”).
 
 This code has been tested with TensorFlow 2.4 and Python 3.8.
 
-## Example Usage
+## Usage
 
 ```python
+# TensorFlow 2.4 or later
 import tensorflow as tf
+
+# Import the TemporalBasisTrafo layer from this package
 from temporal_basis_transformation_network import TemporalBasisTrafo
+
+# See https://github.com/astoeckel/dlop_ldn_function_bases
 import dlop_ldn_function_bases as bases
 
 # Generate a Legendre Delay Network basis
@@ -25,6 +30,8 @@ model = tf.keras.models.Sequential([
     # [n_batch, N, q] ==> [n_batch, N, 1]
     tf.keras.layers.Dense(1, activation='linear', use_bias=False)
 ])
+
+# Compile, fit, evaluate the model as usual...
 ```
 
 
@@ -34,7 +41,7 @@ This code has no dependencies apart from TensorFlow 2.4 or later.
 
 However, to run the unit tests or to play around with the Jupyter notebooks
 in the `notebooks` folder, you need to install `numpy`, `scipy`, and
-`matplotlib`, as well as the `dlop_ldn_function_bases` package, that
+`matplotlib`, as well as the `dlop_ldn_function_bases` package, which
 can be found [here](https://github.com/astoeckel/dlop_ldn_function_bases).
 
 ## Testing
