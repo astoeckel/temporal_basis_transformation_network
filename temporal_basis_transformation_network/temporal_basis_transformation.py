@@ -19,15 +19,18 @@ import tensorflow as tf
 
 class TemporalBasisTrafo(tf.keras.layers.Layer):
     """
-    The TemporalBasisTrafo is a Keras layer that implements a fixed convolution
-    with a function basis described by a matrix H of size q x N. This matrix
-    can be interpreted as a set of FIR filters that form a temporal basis.
+    The TemporalBasisTrafo is a TensorFlow Keras layer that implements a fixed
+    convolution with a function basis described by a matrix H of size q x N.
+    This matrix can be interpreted as a set of q FIR filters of length N. These
+    filters can form a temporal bases. Weighting the momentary filtered values
+    thus can be used to compute functions over time in a purely feed-forward
+    fashion.
 
-    This is a generalised version of the feed-forward Legendre Delay Network
-    model proposed by Narsimha R. Chilkuri in 2020. Instead of computing the
-    Legendre Delay Network basis H, this network will work with any basis
-    matrix H. You can for example use the "dlop_ldn_function_bases" package [1]
-    to generate basis transformations.
+    This code is a generalised version of the feed-forward Legendre Memory Unit
+    (ff-LMU) model proposed by Narsimha R. Chilkuri in 2020. Instead of
+    computing the Legendre Delay Network (LND) basis H, this network will work
+    witha any temporal basis matrix H. You can for example use the
+    "dlop_ldn_function_bases" package [1] to generate basis transformations.
 
     Note that this Layer does not have any trainable parameters. It is
     recommended to add a nonlinear layer to the input and the output of this
@@ -209,7 +212,7 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
         ys = tf.nn.convolution(xs_padded, self.H, name='basis_trafo_conv')
 
         # Now reshape the output to the output dimensions we computed above and
-        # permute the dimensions back so they match the desired input shape.
+        # permute the dimensions back so they match the desired output shape.
         ys_reshaped = tf.reshape(ys, self._output_shape)
         ys_transposed = tf.transpose(ys_reshaped, perm=self._output_perm)
 
