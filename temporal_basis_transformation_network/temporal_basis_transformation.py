@@ -15,10 +15,9 @@
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import tensorflow as tf
-import tensorflow.keras as keras
 
 
-class TemporalBasisTrafo(keras.layers.Layer):
+class TemporalBasisTrafo(tf.keras.layers.Layer):
     """
     The TemporalBasisTrafo is a Keras layer that implements a fixed convolution
     with a function basis described by a matrix H of size q x N. This matrix
@@ -66,6 +65,7 @@ class TemporalBasisTrafo(keras.layers.Layer):
                  size q x N, where q is the number of dimensions an input
                  series is being transformed into, and N is the length of one
                  input sequence, or, in other words, the number of timesteps.
+
         n_units: Number of times the basis transformation unit should be
                  repeated.
         """
