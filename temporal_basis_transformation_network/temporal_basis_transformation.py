@@ -109,6 +109,10 @@ class TemporalBasisTrafo(keras.layers.Layer):
         after reshaping.
         """
         assert (len(S) >= 1) and (n_units > 0) and (q > 0) and (N > 0)
+        assert (sum(s is None for s in S) <= 1)
+
+        def replace_none(S):
+            return (-1 if s is None else s for s in S)
 
         def _impl(S, discard_units):
             # Input length
@@ -123,7 +127,11 @@ class TemporalBasisTrafo(keras.layers.Layer):
             n_batch = 1
             for i, s in enumerate(S):
                 if i != (l - 2):
-                    n_batch *= s
+                    if s is None:
+                        n_batch = -1
+                        break
+                    else:
+                        n_batch *= s
             intermediate_shape = (n_batch, N, 1)
 
             # Compute the intermediate and output permutation. Unless
@@ -137,10 +145,10 @@ class TemporalBasisTrafo(keras.layers.Layer):
 
             # Compute the output shape and the output permutation
             if discard_units:
-                output_shape = tuple((*S[:-2], N, q))
+                output_shape = tuple((*replace_none(S[:-2]), N, q))
                 output_perm = tuple(range(l))
             else:
-                output_shape = tuple((*S[:-2], n_units, N, q))
+                output_shape = tuple((*replace_none(S[:-2]), n_units, N, q))
                 output_perm = tuple((*range(0, l - 2), l - 1, l - 2, l))
 
             return intermediate_shape, intermediate_perm, \
