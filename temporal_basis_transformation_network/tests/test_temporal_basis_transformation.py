@@ -92,7 +92,7 @@ def _test_impulse_response_generic(q, N, dims_pre=tuple(), dims_post=tuple()):
     xs = rng.randn(*dims_pre, N, *dims_post)
 
     # Generate the reference output; iterate over all batch dimensions
-    H = bases.mk_ldn_basis(q, N)
+    H = bases.mk_ldn_basis(q, N, normalize=False)
     ys_ref = np.zeros((*dims_pre, N, *dims_post, q))
     dims_cat = tuple((*dims_pre, *dims_post))
     if len(dims_cat) == 0:
