@@ -35,50 +35,58 @@ def _iterative_reference_implementation(q, xs):
     return np.asarray(res, dtype=np.float32)
 
 
-def test_intermediate_and_output_shape_and_perms():
+def test_intermediate_and_output_shape_and_perms_pad_input():
     """
     Makes sure the the internal "_compute_intermediate_and_output_shape"
-    function works correctly. This function is responsible for making sure that
-    many different input shape configurations are conveniently supported by the
-    network layer.
+    function works correctly in the case of pad=True and the number of input
+    samples being equal to the filter size.  This function is responsible for
+    making sure that many different input shape configurations are conveniently
+    supported by the network layer.
     """
 
-    # Create a short-hand for the function under test
-    f = lambda S, n, q, N: \
-        TemporalBasisTrafo._intermediate_and_output_shape_and_perms(S, n, q, N)
+    q, N = 6, 100
+    for pad in [True, False]:
+        # Create a short-hand for the function under test
+        f = lambda S, n, q, N: \
+            TemporalBasisTrafo._intermediate_and_output_shape_and_perms(
+                S, n, q, N, pad=pad)
 
-    # Special cases for one input unit
-    assert f((100, ), 1, 6, 100) == \
-            ((1, 100, 1), (0, ), (100, 6), (0, 1))
-    assert f((100, 1), 1, 6, 100) == \
-            ((1, 100, 1), (1, 0), (1, 100, 6), (1, 0, 2))
-    assert f((2, 100), 1, 6, 100) == \
-            ((2, 100, 1), (0, 1), (2, 100, 6), (0, 1, 2))
-    assert f((2, 100, 1), 1, 6, 100) == \
-            ((2, 100, 1), (0, 2, 1), (2, 1, 100, 6), (0, 2, 1, 3))
-    assert f((5, 2, 100), 1, 6, 100) == \
-            ((10, 100, 1), (0, 1, 2), (5, 2, 100, 6), (0, 1, 2, 3))
-    assert f((5, 2, 100, 1), 1, 6, 100) == \
-            ((10, 100, 1), (0, 1, 3, 2), (5, 2, 1, 100, 6), (0, 1, 3, 2, 4))
+        # Iterate over multiple values for M_in
+        for M_in in [1, N, N * 2]:
+            M_out = (M_in if pad else max(1, M_in - N + 1))
 
-    # Multiple units
-    assert f((100, 7), 7, 6, 100) == \
-            ((7, 100, 1), (1, 0), (7, 100, 6), (1, 0, 2))
-    assert f((2, 100, 7), 7, 6, 100) == \
-            ((14, 100, 1), (0, 2, 1), (2, 7, 100, 6), (0, 2, 1, 3))
-    assert f((5, 2, 100, 7), 7, 6, 100) == \
-            ((70, 100, 1), (0, 1, 3, 2), (5, 2, 7, 100, 6), (0, 1, 3, 2, 4))
+            # Special cases for one input unit
+            assert f((M_in, 1), 1, q, N) == \
+                    ((1, M_in, 1), (1, 0),
+                     (1, M_out, q), (1, 0, 2))
+            assert f((2, M_in, 1), 1, q, N) == \
+                    ((2, M_in, 1), (0, 2, 1),
+                     (2, 1, M_out, q), (0, 2, 1, 3))
+            assert f((5, 2, M_in, 1), 1, 6, N) == \
+                    ((10, M_in, 1), (0, 1, 3, 2),
+                     (5, 2, 1, M_out, q), (0, 1, 3, 2, 4))
 
-    # "None" in the shape descriptor acts as a wildcard.
-    assert f((None, 100), 1, 6, 100) == \
-            ((-1, 100, 1), (0, 1), (-1, 100, 6), (0, 1, 2))
-    assert f((None, 100, 1), 1, 6, 100) == \
-            ((-1, 100, 1), (0, 2, 1), (-1, 1, 100, 6), (0, 2, 1, 3))
-    assert f((None, 5, 100, 1), 1, 6, 100) == \
-            ((-1, 100, 1), (0, 1, 3, 2), (-1, 5, 1, 100, 6), (0, 1, 3, 2, 4))
+            # Multiple units
+            assert f((M_in, 7), 7, q, N) == \
+                    ((7, M_in, 1), (1, 0), \
+                     (7, M_out, q), (1, 0, 2))
+            assert f((2, M_in, 7), 7, q, N) == \
+                    ((14, M_in, 1), (0, 2, 1), \
+                     (2, 7, M_out, q), (0, 2, 1, 3))
+            assert f((5, 2, M_in, 7), 7, q, N) == \
+                    ((70, M_in, 1), (0, 1, 3, 2), \
+                     (5, 2, 7, M_out, q), (0, 1, 3, 2, 4))
+
+            # "None" in the shape descriptor acts as a wildcard.
+            assert f((None, M_in, 1), 1, q, N) == \
+                    ((-1, M_in, 1), (0, 2, 1), \
+                     (-1, 1, M_out, q), (0, 2, 1, 3))
+            assert f((None, 5, M_in, 1), 1, q, N) == \
+                    ((-1, M_in, 1), (0, 1, 3, 2), \
+                     (-1, 5, 1, M_out, q), (0, 1, 3, 2, 4))
 
 
-def _test_impulse_response_generic(q, N, dims_pre=tuple(), dims_post=tuple()):
+def _test_impulse_response_generic(q, N, dims_pre=tuple(), dims_post=(1,)):
     """
     Generates some test data of the shape (*dims_pre, N, *dims_post) and
     feeds it into a TemporalBasisTrafo instances with a Legendre Delay Network
@@ -95,17 +103,14 @@ def _test_impulse_response_generic(q, N, dims_pre=tuple(), dims_post=tuple()):
     H = bases.mk_ldn_basis(q, N, normalize=False)
     ys_ref = np.zeros((*dims_pre, N, *dims_post, q))
     dims_cat = tuple((*dims_pre, *dims_post))
-    if len(dims_cat) == 0:
-        ys_ref[...] = _iterative_reference_implementation(q, xs)
-    else:
-        for idcs in itertools.product(*map(range, dims_cat)):
-            # Split the indices into the pre and post indices
-            idcs_pre = idcs[:len(dims_pre)]
-            idcs_post = idcs[len(dims_pre):]
+    for idcs in itertools.product(*map(range, dims_cat)):
+        # Split the indices into the pre and post indices
+        idcs_pre = idcs[:len(dims_pre)]
+        idcs_post = idcs[len(dims_pre):]
 
-            # Assemble the source/target slice
-            sel = tuple((*idcs_pre, slice(None), *idcs_post))
-            ys_ref[sel] = _iterative_reference_implementation(q, xs[sel])
+        # Assemble the source/target slice
+        sel = tuple((*idcs_pre, slice(None), *idcs_post))
+        ys_ref[sel] = _iterative_reference_implementation(q, xs[sel])
 
     # Create the tensorflow network with the LDN basis
     ys = TemporalBasisTrafo(
@@ -120,20 +125,12 @@ def test_impulse_response_single_batch_single_unit():
     # Most simple case. Single unit, 100 input samples
     _test_impulse_response_generic(10, 100)
 
-    # Explicitly add the dimension corresponding to the single unit
-    _test_impulse_response_generic(10, 100, tuple(), (1,))
-
-
 def test_impulse_response_multiple_batches_single_unit():
     # Same as above, but add some arbitrary batch dimensions
-    _test_impulse_response_generic(10, 100, (1,))
-    _test_impulse_response_generic(10, 100, (1,), (1,))
-    _test_impulse_response_generic(10, 100, (5,))
-    _test_impulse_response_generic(10, 100, (5,), (1,))
-    _test_impulse_response_generic(10, 100, (5, 3))
-    _test_impulse_response_generic(10, 100, (5, 3), (1,))
-    _test_impulse_response_generic(10, 100, (5, 2, 3))
-    _test_impulse_response_generic(10, 100, (5, 2, 3), (1,))
+    _test_impulse_response_generic(10, 100, (1, 1))
+    _test_impulse_response_generic(10, 100, (5, 1))
+    _test_impulse_response_generic(10, 100, (5, 3, 1))
+    _test_impulse_response_generic(10, 100, (5, 2, 3, 1))
 
 def test_impulse_response_single_batch_multiple_units():
     # Single batch dimension; seven individual units

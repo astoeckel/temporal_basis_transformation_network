@@ -37,10 +37,11 @@ model = tf.keras.models.Sequential([
 
 ## Dependencies
 
-This code has no dependencies apart from TensorFlow 2.4 or later.
+This code has no dependencies apart from TensorFlow 2.4 or later and numpy
+1.19 or later.
 
 However, to run the unit tests or to play around with the Jupyter notebooks
-in the `notebooks` folder, you need to install `numpy`, `scipy`, and
+in the `notebooks` folder, you need to install `scipy`, and
 `matplotlib`, as well as the `dlop_ldn_function_bases` package, which
 can be found [here](https://github.com/astoeckel/dlop_ldn_function_bases).
 
