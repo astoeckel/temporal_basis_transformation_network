@@ -1,5 +1,5 @@
 #   Temporal Basis Transformation Network
-#   Copyright (C) 2020  Andreas Stöckel
+#   Copyright (C) 2020, 2021  Andreas Stöckel
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU Affero General Public License as
@@ -14,5 +14,5 @@
 #   You should have received a copy of the GNU Affero General Public License
 #   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from .temporal_basis_transformation import TemporalBasisTrafo
+from .common import Forward, Inverse
 
