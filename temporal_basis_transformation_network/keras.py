@@ -213,17 +213,23 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
         Implements the actual basis transformations. Reshapes the inputs,
         computes a convolution, and reshapes the output.
         """
-        xs = tf.reshape(xs, self._input_shape_pre)
-        xs = tf.transpose(xs, perm=self._input_perm)
-        xs = tf.reshape(xs, self._input_shape_post)
+        if not self._input_shape_pre is None:
+            xs = tf.reshape(xs, self._input_shape_pre)
+        if not self._input_perm is None:
+            xs = tf.transpose(xs, perm=self._input_perm)
+        if not self._input_shape_post is None:
+            xs = tf.reshape(xs, self._input_shape_post)
         if not self._tf_pad is None:
             xs = tf.pad(xs, self._tf_pad)
         if self._mode is Forward:
             ys = tf.nn.convolution(xs, self._tf_H)
         else:
             ys = tf.matmul(xs, self._tf_H)
-        ys = tf.reshape(ys, self._output_shape_pre)
-        ys = tf.transpose(ys, perm=self._output_perm)
-        ys = tf.reshape(ys, self._output_shape_post)
+        if not self._output_shape_pre is None:
+            ys = tf.reshape(ys, self._output_shape_pre)
+        if not self._output_perm is None:
+            ys = tf.transpose(ys, perm=self._output_perm)
+        if not self._output_shape_post is None:
+            ys = tf.reshape(ys, self._output_shape_post)
         return ys
 

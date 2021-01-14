@@ -18,6 +18,7 @@ import itertools
 import numpy as np
 import dlop_ldn_function_bases as bases
 
+from temporal_basis_transformation_network import Forward, Inverse
 from temporal_basis_transformation_network.keras import TemporalBasisTrafo
 from temporal_basis_transformation_network.reference import trafo as trafo_ref
 
@@ -101,4 +102,39 @@ def test_impulse_response_multiple_batches_multiple_unit():
     _test_impulse_response_generic(10, 100, (5, ), (7, ))
     _test_impulse_response_generic(10, 100, (5, 3), (7, ))
     _test_impulse_response_generic(10, 100, (5, 2, 3), (7, ))
+
+
+def test_inverse_compression():
+    # Generate some test data
+    q, N = 10, 100
+    rng = np.random.RandomState(49818)
+    xs = rng.randn(N, 1)
+
+    H = bases.mk_dlop_basis(q, N)
+
+    ys = TemporalBasisTrafo(H, 1, pad=False)(xs).numpy()
+    xs_inv = TemporalBasisTrafo(H, 1, mode=Inverse)(ys).numpy()
+
+    ys_ref = trafo_ref(xs, H, 1, pad=False)
+    xs_inv_ref = trafo_ref(ys_ref, H, 1, mode=Inverse)
+
+    np.testing.assert_allclose(ys, ys_ref, atol=1e-6)
+    np.testing.assert_allclose(xs_inv, xs_inv_ref, atol=1e-6)
+
+def test_inverse_full_reconstruction():
+    # Generate some test data
+    q, N = 100, 100
+    rng = np.random.RandomState(49818)
+    xs = rng.randn(N, 1)
+
+    H = bases.mk_dlop_basis(q, N)
+
+    ys = TemporalBasisTrafo(H, 1, pad=False)(xs).numpy()
+    xs_inv = TemporalBasisTrafo(H, 1, mode=Inverse)(ys).numpy()
+
+    ys_ref = trafo_ref(xs, H, 1, pad=False)
+    xs_inv_ref = trafo_ref(ys_ref, H, 1, mode=Inverse)
+
+    np.testing.assert_allclose(xs_inv, xs.T, atol=1e-6)
+    np.testing.assert_allclose(xs_inv_ref, xs.T, atol=1e-6)
 

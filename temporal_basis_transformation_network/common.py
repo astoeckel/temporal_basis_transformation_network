@@ -155,7 +155,8 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
     """
     For a given network configuration computes the shapes and permutations. The
     order these are returned in corresponds to the order in which these
-    operations are applied in the final network.
+    operations are applied in the final network. In case a shape or permuation
+    is a no-op, "None" is returned instead.
 
     input_shape_pre:
         Shape the input is being reshaped into before the input permutation is
@@ -206,10 +207,11 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
         assert n_batch % q == 0 # Code errored out above if this is not true
         n_batch //= q
 
-    if mode is Forward:
-        # No special pre-reshape operation is required
-        input_shape_pre = S
+    # Per default, do nothing
+    input_shape_pre, input_perm, input_shape_post = None, None, None
+    output_shape_pre, output_perm, output_shape_post = None, None, None
 
+    if mode is Forward:
         # Move the dimensions containing the units to the left of the samples
         input_perm = tuple(i if i < l - 2 else (2 * l - 3 - i)
                            for i in range(l))
@@ -228,35 +230,15 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
         # n_units and q.
         if post_collapse:
             output_shape_post = tuple((*S[:M_in_dim], M_out, n_units * q))
-        else:
-            output_shape_post = tuple((*S[:M_in_dim], M_out, n_units, q))
     elif mode is Inverse:
         # If pre_collapse is true, we first need to un-collapse the input.
         if pre_collapse:
             input_shape_pre = tuple((*S[:M_in_dim], M_in, n_units, q))
             l += 1 # Account for the input now having one more dimension
-        else:
-            input_shape_pre = S
-
-        # Now we need to move the n_unit dimension to the left of the samples.
-        # We go from an array of the shape
-        #     (*, M, n_units, q) to (*, n_units, M, q)
-        input_perm = tuple((*range(l - 3), l - 2, l - 3, l - 1))
-
-        # Collapse all the initial batch dimensions
-        input_shape_post = (n_batch, M_in, q)
-
-        # Un-collapse the batch dimensions
-        output_shape_pre = tuple((*S[:M_in_dim], n_units, M_out, N))
-
-        # Undo the input permutation
-        output_perm = tuple((*range(l - 3), l - 2, l - 3, l - 1))
 
         # If required, collapse the output dimensions
         if post_collapse:
             output_shape_post = tuple((*S[:M_in_dim], M_out, n_units * N))
-        else:
-            output_shape_post = tuple((*S[:M_in_dim], M_out, n_units, N))
 
     return input_shape_pre, input_perm, input_shape_post, \
            output_shape_pre, output_perm, output_shape_post

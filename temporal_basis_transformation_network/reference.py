@@ -45,9 +45,12 @@ def trafo(xs,
         compute_shapes_and_permutations(xs.shape, n_units, q, N, pad, collapse, mode)
 
     # Re-arrange the input signal
-    xs = xs.reshape(input_shape_pre)
-    xs = xs.transpose(input_perm)
-    xs = xs.reshape(input_shape_post)
+    if not input_shape_pre is None:
+        xs = xs.reshape(input_shape_pre)
+    if not input_perm is None:
+        xs = xs.transpose(input_perm)
+    if not input_shape_post is None:
+        xs = xs.reshape(input_shape_post)
 
     # Pad the input signal
     if mode is Forward:
@@ -59,8 +62,8 @@ def trafo(xs,
                                 axis=1)
 
     # Compute the convolution
-    N_conv = input_shape_post[0]
     if mode is Forward:
+        N_conv = input_shape_post[0]
         ys = np.zeros((N_conv, M_out, q))
         for i in range(N_conv):
             for j in range(q):
@@ -69,9 +72,12 @@ def trafo(xs,
         ys = xs @ H.T
 
     # Re-arrange the output signal
-    ys = ys.reshape(output_shape_pre)
-    ys = ys.transpose(output_perm)
-    ys = ys.reshape(output_shape_post)
+    if not output_shape_pre is None:
+        ys = ys.reshape(output_shape_pre)
+    if not output_perm is None:
+        ys = ys.transpose(output_perm)
+    if not output_shape_post is None:
+        ys = ys.reshape(output_shape_post)
 
     return ys
 
