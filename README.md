@@ -13,7 +13,7 @@ This code has been tested with TensorFlow 2.4 and Python 3.8.
 import tensorflow as tf
 
 # Import the TemporalBasisTrafo layer from this package
-from temporal_basis_transformation_network import TemporalBasisTrafo
+from temporal_basis_transformation_network.keras import TemporalBasisTrafo
 
 # See https://github.com/astoeckel/dlop_ldn_function_bases
 import dlop_ldn_function_bases as bases
