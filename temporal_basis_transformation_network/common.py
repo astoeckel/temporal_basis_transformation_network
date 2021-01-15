@@ -234,7 +234,6 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
         # If pre_collapse is true, we first need to un-collapse the input.
         if pre_collapse:
             input_shape_pre = tuple((*S[:M_in_dim], M_in, n_units, q))
-            l += 1 # Account for the input now having one more dimension
 
         # If required, collapse the output dimensions
         if post_collapse:
