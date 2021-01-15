@@ -41,7 +41,8 @@ def trafo(xs,
 
     # Compute the re-shapes that should be applied to the input and output
     input_shape_pre, input_perm, input_shape_post, \
-    output_shape_pre, output_perm, output_shape_post = \
+    output_shape_pre, output_perm, output_shape_post, \
+    M_in, M_out, M_pad = \
         compute_shapes_and_permutations(xs.shape, n_units, q, N, pad, collapse, mode)
 
     # Re-arrange the input signal
@@ -52,23 +53,21 @@ def trafo(xs,
     if not input_shape_post is None:
         xs = xs.reshape(input_shape_post)
 
-    # Pad the input signal
-    if mode is Forward:
-        M_in, M_out = input_shape_post[-2], output_shape_pre[-2]
-        M_pad = M_out - M_in + N - 1
-        if M_pad > 0:
-            s0, _, s2 = xs.shape
-            xs = np.concatenate((np.zeros((s0, M_pad, s2)), xs),
-                                axis=1)
+    # Pad the input signal if there is padding to be done
+    if (M_pad > 0):
+        assert xs.ndim == 3
+        s0, _, s2 = xs.shape
+        xs = np.concatenate((np.zeros((s0, M_pad, s2)), xs),
+                            axis=1)
 
     # Compute the convolution
-    if mode is Forward:
+    if (mode is Forward) and ((M_out > 1) or (M_pad > 0)):
         N_conv = input_shape_post[0]
         ys = np.zeros((N_conv, M_out, q))
         for i in range(N_conv):
             for j in range(q):
                 ys[i, :, j] = np.convolve(xs[i, :, 0], H[j, ::-1], 'valid')
-    elif mode is Inverse:
+    else:
         ys = xs @ H.T
 
     # Re-arrange the output signal

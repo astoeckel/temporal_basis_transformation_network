@@ -178,6 +178,10 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
     output_shape_post:
         Reshape operation applied to the output after the permutation is
         applied.
+
+    M_in, M_out, M_pad:
+        The number of input and output samples, as well as the number of
+        samples that need to be padded with zeros.
     """
 
     # Make sure the given shape is valid, canonicalize wildcard entries
@@ -191,6 +195,7 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
     M_in_dim = l - 2 if ((mode is Forward) or (pre_collapse)) else l - 3
     M_in = S[M_in_dim]
     M_out = M_in if (pad or (mode is Inverse)) else max(1, M_in - N + 1)
+    M_pad = 0 if (mode is Inverse) else (M_out - M_in + N - 1)
 
     # Compute the intermediate shape. Multiply all input dimensions
     # except for the dimension containing M_in_dim. Since there is at most
@@ -216,8 +221,11 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
         input_perm = tuple(i if i < l - 2 else (2 * l - 3 - i)
                            for i in range(l))
 
-        # Collapse all dimensions to the left of the input samples
-        input_shape_post = (n_batch, M_in, 1)
+        # If there is only one output dimension and no padding is required, we
+        # use a matrix multiplication and do not need the following reshape
+        if (M_out > 1) or (M_pad > 0):
+            # Collapse all dimensions to the left of the input samples
+            input_shape_post = (n_batch, M_in, 1)
 
         # Reshape such that the dimensions corresponding to the individual
         # units are separated out
@@ -240,5 +248,6 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
             output_shape_post = tuple((*S[:M_in_dim], M_out, n_units * N))
 
     return input_shape_pre, input_perm, input_shape_post, \
-           output_shape_pre, output_perm, output_shape_post
+           output_shape_pre, output_perm, output_shape_post, \
+           M_in, M_out, M_pad
 

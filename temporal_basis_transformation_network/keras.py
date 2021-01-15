@@ -163,6 +163,12 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
         # Initialize the Tensorflow constants
         self._tf_H, self._tf_pad = None, None
 
+        # Initialize all the shapes and variables that are being populated in
+        # the "build" method
+        self._input_shape_pre, self._input_perm, self._input_shape_post, \
+        self._output_shape_pre, self._output_perm, self._output_shape_post, \
+        self._M_in, self._M_out, self._M_pad = [None] * 9
+
     def get_config(self):
         return {
             "q": self._q,
@@ -181,18 +187,22 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
         shapes/permutations.
         """
 
+        # Some useful variables
+        q, N, forward = self._q, self._N, self._mode is Forward
+
         # Compute the input/output permutations
         self._input_shape_pre, self._input_perm, self._input_shape_post, \
-        self._output_shape_pre, self._output_perm, self._output_shape_post = \
+        self._output_shape_pre, self._output_perm, self._output_shape_post, \
+        self._M_in, self._M_out, self._M_pad = \
             compute_shapes_and_permutations(
-                S, self._n_units, self._q, self._N,
-                self._pad, self._collapse, self._mode)
+                S, self._n_units, q, N, self._pad, self._collapse, self._mode)
 
         # Upload the basis transformation H into a tensorflow variable. Reshape
         # the matrix to be compatible with tf.nn.convolution. The first
         # dimension is the number of filters, the second dimension the number of
         # input channels, the third dimension the number of output channels.
-        shape = (self._N, 1, self._q) if (self._mode is Forward) else (1, self._q, self._N)
+        conv = (self._M_out > 1) or (self._M_pad > 0)
+        shape = ((N, 1, q) if conv else (N, q)) if forward else (q, N)
         self._tf_H = tf.constant(value=self._H.T,
                                  shape=shape,
                                  dtype='float32')
@@ -201,12 +211,9 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
         # This way the convolution operation will return exactly N output
         # samples.
         self._tf_pad = None
-        if self._mode is Forward:
-            M_in, M_out = self._input_shape_post[-2], self._output_shape_pre[-2]
-            M_pad = M_out - M_in + self._N - 1
-            if M_pad > 0:
-                self._tf_pad = tf.constant([[0, 0], [M_pad, 0], [0, 0]],
-                                           dtype='int32')
+        if self._M_pad > 0:
+            self._tf_pad = tf.constant([[0, 0], [self._M_pad, 0], [0, 0]],
+                                       dtype='int32')
 
     def call(self, xs):
         """
@@ -221,7 +228,7 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
             xs = tf.reshape(xs, self._input_shape_post)
         if not self._tf_pad is None:
             xs = tf.pad(xs, self._tf_pad)
-        if self._mode is Forward:
+        if (self._mode is Forward) and ((self._M_out > 1) or (self._M_pad > 0)):
             ys = tf.nn.convolution(xs, self._tf_H)
         else:
             ys = tf.matmul(xs, self._tf_H)
