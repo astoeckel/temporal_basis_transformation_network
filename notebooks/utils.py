@@ -22,6 +22,22 @@ import scipy.signal
 import scipy.linalg
 
 
+def read_idxgz(filename):
+    import gzip
+    with gzip.open(filename, mode="rb") as f:
+        # Read the header
+        z0, z1, dtype, ndim = f.read(4)
+        assert z0 == 0 and z1 == 0 and dtype == 0x08 and ndim > 0
+
+        dims = []
+        for i in range(ndim):
+            nit0, nit1, nit2, nit3 = f.read(4)
+            dims.append(nit3 | (nit2 << 8) | (nit1 << 16) | (nit0 << 24))
+
+        # Read the remaining data
+        return np.frombuffer(f.read(), dtype=np.uint8).reshape(*dims)
+
+
 def nts(T, dt=1e-3):
     return int(T / dt + 1e-9)
 
@@ -228,7 +244,6 @@ class FrequencyModulatedSine(EnvironmentWithSignalBase):
         self.phi = 0.0
 
         return EnvironmentDescriptor(1, 1, 1 if use_control_dim else 0)
-
 
     def do_step(self, n_smpls):
         # Compute the frequencies
