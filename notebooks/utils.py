@@ -22,6 +22,41 @@ import scipy.signal
 import scipy.linalg
 
 
+def mackey_glass(N_smpls, tau=17.0, dt=1e-3, a=0.2, b=0.1, x0=1.2, σ0=0.1, rng=np.random):
+    def df(x, xd): # xd is the delayed x
+        return a * xd / (1.0 + xd ** 10) - b * x
+
+    # Compute the delay in samples
+    N_delay = int(tau / dt)
+    N_total = N_smpls + N_delay
+
+    # Generate the initial state with some gaussian noise
+    xs = np.zeros(N_total)
+    if σ0 <= 0.0:
+        xs[:N_delay] = x0
+    else:
+        xs[:N_delay] = rng.normal(x0, σ0, N_delay)
+
+    # Integrate the differential equation using Runge-Kutta
+    for i in range(N_delay, N_total):
+        # We need to compute the delayed x at three time-points for
+        # Runge-Kutta: t - tau, t - tau + 0.5 * dt, t - tau + dt. We estimate
+        # the centre value linearly.
+        xd0 = xs[i - N_delay]
+        xd2 = xs[i - N_delay + 1]
+        xd1 = 0.5 * (xd0 + xd2)
+
+        # Evaluate the differential at the Runge-Kutta sample points
+        k1 = df(xs[i - 1], xd0)
+        k2 = df(xs[i - 1] + 0.5 * dt * k1, xd1)
+        k3 = df(xs[i - 1] + 0.5 * dt * k2, xd1)
+        k4 = df(xs[i - 1] + dt * k3, xd2)
+
+        # Perform the Runge-Kutta step
+        xs[i] = xs[i - 1] + dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0
+
+    return xs[N_delay:]
+
 def read_idxgz(filename):
     import gzip
     with gzip.open(filename, mode="rb") as f:
