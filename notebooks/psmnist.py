@@ -64,8 +64,9 @@ def mk_psmnist_dataset(n_validate=10000, seed=103891, batch_size=100):
 BASES = [
     (bases.mk_ldn_basis, "ldn"),
     (bases.mk_dlop_basis, "dlop"),
-    (bases.mk_fourier_basis, "fourier"),
-    (bases.mk_cosine_basis, "cosine"),
+#    (bases.mk_fourier_basis, "fourier"),
+#    (bases.mk_cosine_basis, "cosine"),
+    (bases.mk_haar_basis, "haar"),
 ]
 
 def run_single_experiment(params):
@@ -138,7 +139,7 @@ def run_single_experiment(params):
 if __name__ == '__main__':
     multiprocessing.freeze_support()
 
-    qs = np.unique(np.logspace(np.log2(1), np.log2(484), 50, base=2, dtype=np.int))
+    qs = np.unique(np.logspace(np.log2(1), np.log2(484), 10, base=2, dtype=np.int))
     basis_idcs = range(len(BASES))
     seeds = range(10)
     params = list([

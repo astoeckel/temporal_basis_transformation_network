@@ -20,9 +20,10 @@ import dataclasses
 import numpy as np
 import scipy.signal
 import scipy.linalg
+import tqdm
 
 
-def mackey_glass(N_smpls, tau=17.0, dt=1e-3, a=0.2, b=0.1, x0=1.2, σ0=0.1, rng=np.random):
+def mackey_glass(N_smpls, tau=17.0, dt=1e-3, a=0.2, b=0.1, x0=1.2, σ0=0.2, rng=np.random):
     def df(x, xd): # xd is the delayed x
         return a * xd / (1.0 + xd ** 10) - b * x
 
@@ -56,6 +57,66 @@ def mackey_glass(N_smpls, tau=17.0, dt=1e-3, a=0.2, b=0.1, x0=1.2, σ0=0.1, rng=
         xs[i] = xs[i - 1] + dt * (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0
 
     return xs[N_delay:]
+
+def mk_mackey_glass_dataset(N_wnds, dt=1.0, T=10000, tau=30.0,
+                            N_pred=15, N_smpls=40000, N_test=10000, N_grp=100, N_batch=100,
+                            seed=4718, verbose=False):
+    import tensorflow as tf
+
+    # Generate the random number generator
+    rng = np.random.RandomState(57503 + 15173 * seed)
+
+    # Number of samples per MG dataset
+    N_ts = int(T / dt)
+
+    # Create the arrays holding the individual samples
+    N_wnd = sum(N_wnds) - len(N_wnds) + 1
+    smpls_x_train = np.zeros((N_smpls, N_wnd))
+    smpls_t_train = np.zeros((N_smpls, N_pred))
+    smpls_x_val, smpls_x_test = np.zeros((2, N_test, N_wnd))
+    smpls_t_val, smpls_t_test = np.zeros((2, N_test, N_pred))
+
+    # Generate the training data
+    pbar = tqdm.tqdm if verbose else lambda x: x
+    N_smpls -= N_smpls % N_grp
+    for i in pbar(range(N_smpls // N_grp)):
+        # Create three new Mackey-Glass datasets
+        xs_train = mackey_glass(N_ts, tau=tau, dt=dt, rng=rng)
+
+        # Extract random segments from the generated signal
+        for j in range(N_grp):
+            k = i * N_grp + j
+            i0 = rng.randint(int(tau / dt) + 1, N_ts - N_wnd - N_pred)
+            i1, i2 = i0 + N_wnd, i0 + N_wnd + N_pred
+            smpls_x_train[k], smpls_t_train[k] = xs_train[i0:i1], xs_train[i1:i2]
+
+    # Independently generate the test data
+    N_test -= N_test % N_grp
+    for i in pbar(range(N_test // N_grp)):
+        # Create two new Mackey-Glass datasets
+        xs_val = mackey_glass(N_ts, tau=tau, dt=dt, rng=rng)
+        xs_test = mackey_glass(N_ts, tau=tau, dt=dt, rng=rng)
+
+        # Extract random segments from the generated signal
+        for j in range(N_grp):
+            k = i * N_grp + j
+            i0 = rng.randint(int(tau / dt) + 1, N_ts - N_wnd - N_pred)
+            i1, i2 = i0 + N_wnd, i0 + N_wnd + N_pred
+            smpls_x_val[k],   smpls_t_val[k]   = xs_val[i0:i1],   xs_val[i1:i2]
+            smpls_x_test[k],  smpls_t_test[k]  = xs_test[i0:i1],  xs_test[i1:i2]
+
+    ds_train = tf.data.Dataset.from_tensor_slices((smpls_x_train, smpls_t_train))
+    ds_train = ds_train.shuffle(N_smpls)
+    ds_train = ds_train.batch(N_batch)
+
+    ds_val = tf.data.Dataset.from_tensor_slices((smpls_x_val, smpls_t_val))
+    ds_val = ds_val.batch(N_batch)
+
+    ds_test = tf.data.Dataset.from_tensor_slices((smpls_x_test, smpls_t_test))
+    ds_test = ds_test.batch(N_batch)
+
+    return ds_train, ds_val, ds_test
+
 
 def read_idxgz(filename):
     import gzip

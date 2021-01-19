@@ -1,4 +1,5 @@
 text.usetex: true
+text.latex.preamble: \usepackage{wasysym}
 font.size: 9.0
 font.family: serif
 legend.fontsize: 9.0
