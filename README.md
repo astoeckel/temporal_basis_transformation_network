@@ -64,7 +64,7 @@ model = tf.keras.models.Sequential([
 ```
 
 ### Input and output dimensions
-The `TemporalBasisTrafo` layer can be thought of as "consuming" *N - 1* temporal samples
+The `TemporalBasisTrafo` layer can be thought of as "consuming" *N* - 1 temporal samples
 and outputting *q* spatial dimensions instead.
 
 To be more precise, the input and output dimensions of the layer are generally of the following form
