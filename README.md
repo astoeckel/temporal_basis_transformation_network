@@ -13,7 +13,7 @@ This is exactly the idea behind Temporal Convolutional Networks.
 
 **Features:**
 * Easier to use than `tf.convolve`, works with any number of batch dimensions
-* Built in *forward* and *inverse* mode
+* Built-in *forward* and *inverse* mode
 * Optional padding of the input to preserve the input sequence length
 * Trainable convolution with weight normalization
 * Includes a numpy-only reference implementation
