@@ -39,8 +39,7 @@ This depends on TensorFlow 2.4 or later and numpy 1.19 or later.
 
 To run the unit tests or to run the Jupyter notebooks
 in the `notebooks` folder, you need to install `scipy` and
-`matplotlib`, as well as the `dlop_ldn_function_bases` package, which
-can be found [here](https://github.com/astoeckel/dlop_ldn_function_bases).
+`matplotlib`, as well as the [`dlop_ldn_function_bases`](https://github.com/astoeckel/dlop_ldn_function_bases) package.
 
 
 ## Usage
