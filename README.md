@@ -21,6 +21,8 @@ Depending on your environment, you may need to use `pip` instead of `pip3`. Also
 
 ## Usage
 
+The following is a very basic usage example; a sequence of N = 100 temporal samples is compressed into q = 20 generalised Fourier coefficients and a single temporal sample.
+
 ```python
 # TensorFlow 2.4 or later
 import tensorflow as tf
@@ -46,6 +48,26 @@ model = tf.keras.models.Sequential([
 
 # Compile, fit, evaluate the model as usual...
 ```
+
+### Input and output dimensions
+The `TemporalBasisTrafo` layer can be thought of as "consuming" *N - 1* temporal samples
+and outputting *q* spatial dimensions instead.
+
+To be more precise, the input and output dimensions of the layer are generally of the following form
+```
+Input: [...batch dimensions, M, units]
+```
+where *M* is the set of temporal samples, and *units* corresponds to the number of input units.
+
+The number of output dimensions will be
+```
+Input: [...batch dimensions, M', q * units]
+```
+where *M' = max(1, M - N + 1)* and *q* and *N* are as defined in the above code example.
+
+There are quite a few configuration options in the constructor that affect the number of input and output dimensions.
+These include `pad`, `mode` and `collapse`.
+Take a look at the code in [`temporal_basis_transformation_networkkeras.py`](https://github.com/ctn-waterloo/temporal_basis_transformation_network/blob/main/temporal_basis_transformation_network/keras.py#L25) for a more detailed description.
 
 
 ## Dependencies
