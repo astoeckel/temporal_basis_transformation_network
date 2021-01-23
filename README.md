@@ -11,7 +11,7 @@ the code was mostly designed with fixed temporal convolutions (such as the Fouri
 * Optional padding of the input to preserve the input sequence length
 * Trainable convolution with weight normalization
 
-This code has been tested with TensorFlow 2.4 and Python 3.8.
+This code has been tested with TensorFlow 2.4, 2.5 and Python 3.8.
 
 
 ## Installation
