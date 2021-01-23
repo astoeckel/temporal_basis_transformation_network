@@ -15,6 +15,7 @@ This is exactly the idea behind Temporal Convolution Networks.
 * Built in *forward* and *inverse* mode
 * Optional padding of the input to preserve the input sequence length
 * Trainable convolution with weight normalization
+* Includes a numpy-only reference implementation
 
 This code has been tested with TensorFlow 2.4, 2.5 and Python 3.8.
 It has been designed in conjunction with the [`dlop_ldn_function_bases`](https://github.com/astoeckel/dlop_ldn_function_bases) package, which can be used to generate basis transformations.
