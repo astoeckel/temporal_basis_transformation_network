@@ -33,6 +33,16 @@ pip3 install --user -e .
 Depending on your environment, you may need to use `pip` instead of `pip3`. Also, if you're inside a virtual environment, you may have to skip the `--user` argument.
 
 
+### Dependencies
+
+This depends on TensorFlow 2.4 or later and numpy 1.19 or later.
+
+To run the unit tests or to run the Jupyter notebooks
+in the `notebooks` folder, you need to install `scipy` and
+`matplotlib`, as well as the `dlop_ldn_function_bases` package, which
+can be found [here](https://github.com/astoeckel/dlop_ldn_function_bases).
+
+
 ## Usage
 
 ### 📖 [Read the inline documentation](https://github.com/ctn-waterloo/temporal_basis_transformation_network/blob/main/temporal_basis_transformation_network/keras.py#L25) 
@@ -85,17 +95,6 @@ where `M' = max(1, M - N + 1)` and *q* and *N* are as defined in the above code 
 There are quite a few configuration options in the constructor that affect the number of input and output dimensions.
 These include `pad`, `mode` and `collapse`.
 Take a look at [`temporal_basis_transformation_networkkeras.py`](https://github.com/ctn-waterloo/temporal_basis_transformation_network/blob/main/temporal_basis_transformation_network/keras.py#L25) for a more detailed description.
-
-
-## Dependencies
-
-This code has no dependencies apart from TensorFlow 2.4 or later and numpy
-1.19 or later.
-
-However, to run the unit tests or to play around with the Jupyter notebooks
-in the `notebooks` folder, you need to install `scipy`, and
-`matplotlib`, as well as the `dlop_ldn_function_bases` package, which
-can be found [here](https://github.com/astoeckel/dlop_ldn_function_bases).
 
 
 ## Testing
