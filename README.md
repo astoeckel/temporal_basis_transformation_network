@@ -6,6 +6,18 @@ a “generalised Fourier transformation”).
 
 This code has been tested with TensorFlow 2.4 and Python 3.8.
 
+
+## Installation
+
+You can simply install this package via `pip`. For example, run
+
+```sh
+pip3 install --user -e .
+```
+
+Depending on your environment, you may need to use `pip` instead of `pip3`. Also, if you're inside a virtual environment, you may have to skip the `--user` argument.
+
+
 ## Usage
 
 ```python
