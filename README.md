@@ -27,6 +27,8 @@ Depending on your environment, you may need to use `pip` instead of `pip3`. Also
 
 ## Usage
 
+### 📖 [Read the inline documentation](https://github.com/ctn-waterloo/temporal_basis_transformation_network/blob/main/temporal_basis_transformation_network/keras.py#L25) 
+
 The following is a very basic usage example; a sequence of N = 100 temporal samples is compressed into q = 20 generalised Fourier coefficients and a single temporal sample.
 
 ```python
