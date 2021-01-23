@@ -3,7 +3,7 @@
 The code in this repository implements a TensorFlow Keras layer for temporal
 convolution with a set of FIR filters;
 these FIR filters form a temporal basis and hence transform an input signal into a generalized Fourier representation.
-This is particularly useful when building feed-forward networks performing sequence-to-sequence tasks.
+This is particularly useful when building feed-forward networks performing sequence-to-sequence transformations.
 
 Although the code was mostly designed with fixed temporal convolutions (such as the Fourier or LDN bases) in mind,
 the layer can also be used to learn the FIR filters using backprop.
