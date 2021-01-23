@@ -61,7 +61,7 @@ where *M* is the set of temporal samples, and *units* corresponds to the number 
 
 The number of output dimensions will be
 ```
-Input: [...batch dimensions, M', q * units]
+Output: [...batch dimensions, M', q * units]
 ```
 where *M' = max(1, M - N + 1)* and *q* and *N* are as defined in the above code example.
 
