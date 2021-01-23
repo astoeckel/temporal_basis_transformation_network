@@ -71,7 +71,7 @@ To be more precise, the input and output dimensions of the layer are generally o
 ```
 Input: [...batch dimensions, M, units]
 ```
-where *M* is the set of temporal samples, and *units* corresponds to the number of input units.
+where *M* is the set of temporal samples, and *units* corresponds to the number of units in the layer.
 
 The number of output dimensions will be
 ```
