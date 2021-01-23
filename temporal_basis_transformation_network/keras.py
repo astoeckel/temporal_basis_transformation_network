@@ -180,9 +180,9 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
         # Call the inherited constructor
         super().__init__(trainable=trainable)
 
-        # Special handling if `H` is a tuple and `trainable` is True
+        # Special handling if `H` is a tuple
         if (not initializer is None) and (not isinstance(H, tuple)):
-            raise RuntimeError("H must be a tuple (q, N) if an"
+            raise RuntimeError("H must be a tuple (q, N) if an "
                                "initializer is given")
 
         # Fetch the initializer if one is given
