@@ -232,6 +232,8 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
             "pre_collapse": self._collapse[0],
             "post_collapse": self._collapse[1],
             "mode": repr(self._mode),
+            "trainable": self.trainable,
+            "normalize": self._normalize,
         }
 
     def build(self, S):
