@@ -1,11 +1,12 @@
 # Temporal Basis Transformation Network
 
-This repository implements a TensorFlow Keras layer for temporal
-convolution with a set of FIR filters.
-These FIR filters may form a temporal basis transformation; hence the name of this network.
+The code in this repository implements a TensorFlow Keras layer for temporal
+convolution with a set of FIR filters;
+these FIR filters form a temporal basis and hence transform an input signal into a generalized Fourier representation.
 
-This layer can for example be used to construct temporal convolution network networks.
-Although the code was mostly designed with fixed temporal convolutions (such as the Fourier or LDN bases) in mind.
+Although the code was mostly designed with fixed temporal convolutions (such as the Fourier or LDN bases) in mind,
+the layer can also be used to learn the FIR filters using backprop.
+This is exactly the idea behind Temporal Convolution Networks.
 
 ![Forward and inverse transformation example](doc/forward_inverse_example.png)
 
