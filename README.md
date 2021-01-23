@@ -2,8 +2,14 @@
 
 This repository implements a TensorFlow 2 Keras network layer for temporal
 convolution with a set of FIR filters which may form a temporal basis.
+While this layer can be used to build temporal convolution network networks,
+the code was mostly designed with fixed temporal convolutions (such as the Fourier basis) in mind.
 
-This layer is mostly designed for networks performing online, zero-delay processing of data, i.e., applications where a new output must be produced on every time-step.
+**Features:**
+* Easier to use than `tf.convolve`, works with any number of batch dimensions
+* Built in *forward* and *inverse* mode
+* Optional padding of the input to preserve the input sequence length
+* Trainable convolution with weight normalization
 
 This code has been tested with TensorFlow 2.4 and Python 3.8.
 
@@ -80,6 +86,7 @@ in the `notebooks` folder, you need to install `scipy`, and
 `matplotlib`, as well as the `dlop_ldn_function_bases` package, which
 can be found [here](https://github.com/astoeckel/dlop_ldn_function_bases).
 
+
 ## Testing
 
 Unit tests use `pytest`. Run
@@ -90,3 +97,21 @@ to install `pytest` if it isn't already available on your system.
 
 Simply run `pytest` from the main directory of this repository to run the
 unit tests.
+
+
+## License
+Temporal Basis Transformation Network  
+Copyright (C) 2020, 2021  Andreas Stöckel
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+pblished by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
