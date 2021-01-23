@@ -178,7 +178,7 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
             "he_uniform".
         """
         # Call the inherited constructor
-        super().__init__()
+        super().__init__(trainable=trainable)
 
         # Special handling if `H` is a tuple and `trainable` is True
         if (not initializer is None) and (not isinstance(H, tuple)):
@@ -204,14 +204,13 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
         self._q, self._N, self._H, self._units, self._pad, self._collapse, \
         self._mode = \
             coerce_params(H, units, pad, collapse, mode, normalize, rcond, np)
-        self._trainable = trainable
         self._normalize = normalize
 
         # In inverse mode, when training the basis transformation, and an
         # initial basis was given, the individual columns of the inverted H
         # may not have length one. We will preserve that length while training.
         self._target_norm = None
-        if (trainable and normalize and (self._mode is Inverse)
+        if (self.trainable and self._normalize and (self._mode is Inverse)
                 and (self._initializer is None)):
             self._target_norm = np.linalg.norm(self._H, axis=0)
 
@@ -336,7 +335,7 @@ class TemporalBasisTrafo(tf.keras.layers.Layer):
         # Normalize the kernel. We don't have to do this if the layer is not
         # trainable, since normalisation happened at construction time.
         H = self._tf_H
-        if self._normalize and self._trainable:
+        if self._normalize and self.trainable:
             if self._mode is Forward:
                 norm = tf.norm(self._tf_H, axis=0)
             else:  # self._mode is Inverse:
