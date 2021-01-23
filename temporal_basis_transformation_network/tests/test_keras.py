@@ -193,4 +193,11 @@ def test_kernel_normalisation():
         np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
 
 
+def test_trainable():
+    q, N = 10, 20
+    trafo = TemporalBasisTrafo((q, N), trainable=False)
+    assert trafo.trainable is False
+
+    trafo = TemporalBasisTrafo((q, N), trainable=True)
+    assert trafo.trainable is True
 
