@@ -65,11 +65,20 @@ def _test_impulse_response_generic(q, N, dims_pre=tuple(), dims_post=(1, )):
         ys_ref[sel] = _iterative_reference_implementation(q, xs[sel])
 
     # Create the tensorflow network with the LDN basis
-    ys = TemporalBasisTrafo(H, dims_post[0], collapse=False)(xs).numpy()
+    ys = TemporalBasisTrafo(H,
+                            dims_post[0],
+                            collapse=False,
+                            pad=True,
+                            normalize=False)(xs).numpy()
     assert ys.shape == ys_ref.shape
 
     # Perform the same computation using the numpy reference implementation
-    ys_ref_np = trafo_ref(xs, H, dims_post[0], collapse=False)
+    ys_ref_np = trafo_ref(xs,
+                          H,
+                          dims_post[0],
+                          collapse=False,
+                          pad=True,
+                          normalize=False)
 
     # Make sure that all the implementations tested here produce approximately
     # the same output
@@ -112,14 +121,15 @@ def test_inverse_compression():
 
     H = bases.mk_dlop_basis(q, N)
 
-    ys = TemporalBasisTrafo(H, 1, pad=False)(xs).numpy()
+    ys = TemporalBasisTrafo(H, pad=False)(xs).numpy()
     xs_inv = TemporalBasisTrafo(H, 1, mode=Inverse)(ys).numpy()
 
-    ys_ref = trafo_ref(xs, H, 1, pad=False)
-    xs_inv_ref = trafo_ref(ys_ref, H, 1, mode=Inverse)
+    ys_ref = trafo_ref(xs, H, pad=False)
+    xs_inv_ref = trafo_ref(ys_ref, H, mode=Inverse)
 
     np.testing.assert_allclose(ys, ys_ref, atol=1e-6)
     np.testing.assert_allclose(xs_inv, xs_inv_ref, atol=1e-6)
+
 
 def test_inverse_full_reconstruction():
     # Generate some test data
@@ -129,12 +139,48 @@ def test_inverse_full_reconstruction():
 
     H = bases.mk_dlop_basis(q, N)
 
-    ys = TemporalBasisTrafo(H, 1, pad=False)(xs).numpy()
+    ys = TemporalBasisTrafo(H, pad=False)(xs).numpy()
     xs_inv = TemporalBasisTrafo(H, 1, mode=Inverse)(ys).numpy()
 
-    ys_ref = trafo_ref(xs, H, 1, pad=False)
+    ys_ref = trafo_ref(xs, H, pad=False)
     xs_inv_ref = trafo_ref(ys_ref, H, 1, mode=Inverse)
 
+    np.testing.assert_allclose(ys, ys_ref, atol=1e-6)
     np.testing.assert_allclose(xs_inv, xs.T, atol=1e-6)
     np.testing.assert_allclose(xs_inv_ref, xs.T, atol=1e-6)
+
+
+def test_kernel_normalisation():
+    q, N = 16, 100
+
+    H = bases.mk_ldn_basis(q, N, normalize=False)
+    H = H.astype(np.float32)
+
+    H_norm = H / np.linalg.norm(H, axis=1)[:, None]
+    H_inv = np.linalg.pinv(H, rcond=1e-6)
+    H_norm_inv = np.linalg.pinv(H_norm, rcond=1e-6)
+
+    # No normalisation, forward mode
+    layer = TemporalBasisTrafo(H, normalize=False)
+    np.testing.assert_allclose(H, layer.kernel(), atol=1e-6)
+    layer.build((None, N, 1))
+    np.testing.assert_allclose(H, layer.kernel(), atol=1e-6)
+
+    # Normalisation, forward mode
+    layer = TemporalBasisTrafo(H, normalize=True)
+    np.testing.assert_allclose(H_norm, layer.kernel(), atol=1e-6)
+    layer.build((None, N, 1))
+    np.testing.assert_allclose(H_norm, layer.kernel(), atol=1e-6)
+
+    # No normalisation, inverse mode
+    layer = TemporalBasisTrafo(H, normalize=False, mode=Inverse)
+    np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
+    layer.build((None, 1, q))
+    np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
+
+    # Normalisation, inverse mode
+    layer = TemporalBasisTrafo(H, normalize=False, mode=Inverse)
+    np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
+    layer.build((None, 1, q))
+    np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
 

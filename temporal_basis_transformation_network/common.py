@@ -58,7 +58,7 @@ def coerce_collapse(collapse):
             "of booleans (pre_collapse, post_collapse)")
 
 
-def coerce_params(H, n_units, pad, collapse, mode, rcond, np):
+def coerce_params(H, units, pad, collapse, mode, normalize, rcond, np):
     # Make sure the matrix H has the right shape and type
     H = np.asarray(H).astype(dtype=np.float32, copy=True)
     if (H.ndim != 2) or (H.size == 0):
@@ -74,9 +74,9 @@ def coerce_params(H, n_units, pad, collapse, mode, rcond, np):
     if rcond <= 0.0:
         raise RuntimeError("rcond must be strictly positive")
 
-    # Make sure n_units is positive
-    n_units = int(n_units)
-    if n_units <= 0:
+    # Make sure units is positive
+    units = int(units)
+    if units <= 0:
         raise RuntimeError("Number of units must be strictly positive.")
 
     # Make sure "pad" is a boolean.
@@ -91,16 +91,20 @@ def coerce_params(H, n_units, pad, collapse, mode, rcond, np):
                            "temporal_basis_transformation_network.Forward or "
                            "temporal_basis_transformation_network.Inverse")
 
+    # If normalize is true, make sure that the rows of H have unit length
+    if normalize:
+        H /= np.linalg.norm(H, axis=1)[:, None]
+
     # Compute the pseudo-inverse of H if we're running in inverse mode. The
     # pseudo-inverse is exactly equal to the transpose if H is orthogonal; the
     # pseudo-inverse is needed for non-orthogonal bases such as the LDN basis.
     if mode is Inverse:
         H = np.linalg.pinv(H, rcond=rcond)
 
-    return q, N, H, n_units, pad, collapse, mode
+    return q, N, H, units, pad, collapse, mode
 
 
-def check_input_shape(S, n_units, q, collapse, mode):
+def check_input_shape(S, units, q, collapse, mode):
     """
     Checks a given input shape for compatibility. The input shape S is a
     tuple or list. Wildcard dimensions may either be indicated by using "-1"
@@ -127,11 +131,11 @@ def check_input_shape(S, n_units, q, collapse, mode):
     # "collapse" into account as well.
     pre_collapse, _ = coerce_collapse(collapse)
     if mode is Forward:
-        S_expected = (-1, n_units)
+        S_expected = (-1, units)
     elif pre_collapse:  # and (mode is Inverse)
-        S_expected = (-1, n_units * q)
+        S_expected = (-1, units * q)
     else:  # mode is Inverse
-        S_expected = (-1, n_units, q)
+        S_expected = (-1, units, q)
 
     # Check whether the last dimensions are as expected
     ok = len(S) >= len(S_expected)
@@ -151,7 +155,7 @@ def check_input_shape(S, n_units, q, collapse, mode):
     return S
 
 
-def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
+def compute_shapes_and_permutations(S, units, q, N, pad, collapse, mode):
     """
     For a given network configuration computes the shapes and permutations. The
     order these are returned in corresponds to the order in which these
@@ -185,7 +189,7 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
     """
 
     # Make sure the given shape is valid, canonicalize wildcard entries
-    S = check_input_shape(S, n_units, q, collapse, mode)
+    S = check_input_shape(S, units, q, collapse, mode)
 
     # Fetch some convenient variables
     l, (pre_collapse, post_collapse) = len(S), coerce_collapse(collapse)
@@ -209,7 +213,7 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
     # I we're in inverse mode, we incorrectly included q in the above
     # computation. Undo this by dividing by q.
     if (n_batch > 0) and (mode is Inverse):
-        assert n_batch % q == 0 # Code errored out above if this is not true
+        assert n_batch % q == 0  # Code errored out above if this is not true
         n_batch //= q
 
     # Per default, do nothing
@@ -229,23 +233,23 @@ def compute_shapes_and_permutations(S, n_units, q, N, pad, collapse, mode):
 
         # Reshape such that the dimensions corresponding to the individual
         # units are separated out
-        output_shape_pre = tuple((*S[:-2], n_units, M_out, q))
+        output_shape_pre = tuple((*S[:-2], units, M_out, q))
 
         # Move the units to the right of the samples
         output_perm = tuple((*range(0, M_in_dim), M_in_dim + 1, M_in_dim, l))
 
         # Depending on whether or not a post-collapse is required, collapse
-        # n_units and q.
+        # units and q.
         if post_collapse:
-            output_shape_post = tuple((*S[:M_in_dim], M_out, n_units * q))
+            output_shape_post = tuple((*S[:M_in_dim], M_out, units * q))
     elif mode is Inverse:
         # If pre_collapse is true, we first need to un-collapse the input.
         if pre_collapse:
-            input_shape_pre = tuple((*S[:M_in_dim], M_in, n_units, q))
+            input_shape_pre = tuple((*S[:M_in_dim], M_in, units, q))
 
         # If required, collapse the output dimensions
         if post_collapse:
-            output_shape_post = tuple((*S[:M_in_dim], M_out, n_units * N))
+            output_shape_post = tuple((*S[:M_in_dim], M_out, units * N))
 
     return input_shape_pre, input_perm, input_shape_post, \
            output_shape_pre, output_perm, output_shape_post, \

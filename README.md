@@ -24,10 +24,10 @@ H = bases.mk_ldn_basis(q=q, N=N)
 
 # Build a simple model with a linear readout
 model = tf.keras.models.Sequential([
-    # [n_batch, N] ==> [n_batch, N, q]
-    TemporalBasisTrafo(H=H, n_units=1),
+    # [..., N, units] ==> [..., 1, units * q]
+    TemporalBasisTrafo(H=H, units=1),
 
-    # [n_batch, N, q] ==> [n_batch, N, 1]
+    # [..., 1, q] ==> [..., 1, 1]
     tf.keras.layers.Dense(1, activation='linear', use_bias=False)
 ])
 

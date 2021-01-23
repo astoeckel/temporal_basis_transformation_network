@@ -21,10 +21,11 @@ from .common import *
 
 def trafo(xs,
           H,
-          n_units=1,
+          units=1,
           pad=True,
           collapse=True,
           mode=Forward,
+          normalize=True,
           rcond=1e-6,
           np=np):
     """
@@ -33,8 +34,8 @@ def trafo(xs,
     implementation can be changed by switching from 
     """
     # Coerce the parameters
-    q, N, H, n_units, pad, collapse, mode = coerce_params(
-        H, n_units, pad, collapse, mode, rcond, np)
+    q, N, H, units, pad, collapse, mode = coerce_params(
+        H, units, pad, collapse, mode, normalize, rcond, np)
 
     # Make sure the input data is a float32 array
     xs = np.asarray(xs, dtype=np.float32)
@@ -43,7 +44,7 @@ def trafo(xs,
     input_shape_pre, input_perm, input_shape_post, \
     output_shape_pre, output_perm, output_shape_post, \
     M_in, M_out, M_pad = \
-        compute_shapes_and_permutations(xs.shape, n_units, q, N, pad, collapse, mode)
+        compute_shapes_and_permutations(xs.shape, units, q, N, pad, collapse, mode)
 
     # Re-arrange the input signal
     if not input_shape_pre is None:
@@ -57,8 +58,7 @@ def trafo(xs,
     if (M_pad > 0):
         assert xs.ndim == 3
         s0, _, s2 = xs.shape
-        xs = np.concatenate((np.zeros((s0, M_pad, s2)), xs),
-                            axis=1)
+        xs = np.concatenate((np.zeros((s0, M_pad, s2)), xs), axis=1)
 
     # Compute the convolution
     if (mode is Forward) and ((M_out > 1) or (M_pad > 0)):
