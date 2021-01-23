@@ -1,13 +1,14 @@
 # Temporal Basis Transformation Network
 
-This repository implements a TensorFlow 2 Keras network layer for temporal
-convolution with a set of FIR filters which may form a temporal basis.
+This repository implements a TensorFlow Keras layer for temporal
+convolution with a set of FIR filters.
+These FIR filters may form a temporal basis.
+
+This layer can for example be used to construct temporal convolution network networks;
+however, the code was mostly designed with fixed temporal convolutions (such as the Fourier or LDN bases) in mind.
+Use the [`dlop_ldn_function_bases`](https://github.com/astoeckel/dlop_ldn_function_bases) Package to generate fixed function bases.
 
 ![Forward and inverse transformation example](doc/forward_inverse_example.png)
-
-While this layer can be used to build temporal convolution network networks,
-the code was mostly designed with fixed temporal convolutions (such as the Fourier basis) in mind.
-Use the [dlop_ldn_function_bases](https://github.com/astoeckel/dlop_ldn_function_bases) Package to generate fixed function bases.
 
 **Features:**
 * Easier to use than `tf.convolve`, works with any number of batch dimensions
