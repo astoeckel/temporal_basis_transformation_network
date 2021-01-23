@@ -63,7 +63,7 @@ The number of output dimensions will be
 ```
 Output: [...batch dimensions, M', q * units]
 ```
-where *M' = max(1, M - N + 1)* and *q* and *N* are as defined in the above code example.
+where `M' = max(1, M - N + 1)` and *q* and *N* are as defined in the above code example.
 
 There are quite a few configuration options in the constructor that affect the number of input and output dimensions.
 These include `pad`, `mode` and `collapse`.
