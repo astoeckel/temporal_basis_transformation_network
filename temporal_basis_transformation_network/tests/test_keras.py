@@ -160,27 +160,37 @@ def test_kernel_normalisation():
     H_inv = np.linalg.pinv(H, rcond=1e-6)
     H_norm_inv = np.linalg.pinv(H_norm, rcond=1e-6)
 
-    # No normalisation, forward mode
-    layer = TemporalBasisTrafo(H, normalize=False)
-    np.testing.assert_allclose(H, layer.kernel(), atol=1e-6)
-    layer.build((None, N, 1))
-    np.testing.assert_allclose(H, layer.kernel(), atol=1e-6)
+    # Test trainable vs not trainable (these are slightly different code-paths)
+    for trainable in [False, True]:
+        # No normalisation, forward mode
+        layer = TemporalBasisTrafo(H, normalize=False, trainable=trainable)
+        np.testing.assert_allclose(H, layer.kernel(), atol=1e-6)
+        layer.build((None, N, 1))
+        np.testing.assert_allclose(H, layer.kernel(), atol=1e-6)
 
-    # Normalisation, forward mode
-    layer = TemporalBasisTrafo(H, normalize=True)
-    np.testing.assert_allclose(H_norm, layer.kernel(), atol=1e-6)
-    layer.build((None, N, 1))
-    np.testing.assert_allclose(H_norm, layer.kernel(), atol=1e-6)
+        # Normalisation, forward mode
+        layer = TemporalBasisTrafo(H, normalize=True, trainable=trainable)
+        np.testing.assert_allclose(H_norm, layer.kernel(), atol=1e-6)
+        layer.build((None, N, 1))
+        np.testing.assert_allclose(H_norm, layer.kernel(), atol=1e-6)
 
-    # No normalisation, inverse mode
-    layer = TemporalBasisTrafo(H, normalize=False, mode=Inverse)
-    np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
-    layer.build((None, 1, q))
-    np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
+        # No normalisation, inverse mode
+        layer = TemporalBasisTrafo(H,
+                                   normalize=False,
+                                   mode=Inverse,
+                                   trainable=trainable)
+        np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
+        layer.build((None, 1, q))
+        np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
 
-    # Normalisation, inverse mode
-    layer = TemporalBasisTrafo(H, normalize=False, mode=Inverse)
-    np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
-    layer.build((None, 1, q))
-    np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
+        # Normalisation, inverse mode
+        layer = TemporalBasisTrafo(H,
+                                   normalize=False,
+                                   mode=Inverse,
+                                   trainable=trainable)
+        np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
+        layer.build((None, 1, q))
+        np.testing.assert_allclose(H_inv, layer.kernel(), atol=1e-6)
+
+
 
