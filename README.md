@@ -1,8 +1,9 @@
 # Temporal Basis Transformation Network
 
 This repository implements a TensorFlow 2 Keras network layer for temporal
-convolution with a set of FIR filters forming a temporal basis (also known as
-a “generalised Fourier transformation”).
+convolution with a set of FIR filters which may form a temporal basis.
+
+This layer is mostly designed for networks performing online, zero-delay processing of data, i.e., applications where a new output must be produced on every time-step.
 
 This code has been tested with TensorFlow 2.4 and Python 3.8.
 
