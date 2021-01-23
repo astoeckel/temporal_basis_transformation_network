@@ -67,7 +67,7 @@ where `M' = max(1, M - N + 1)` and *q* and *N* are as defined in the above code 
 
 There are quite a few configuration options in the constructor that affect the number of input and output dimensions.
 These include `pad`, `mode` and `collapse`.
-Take a look at the code in [`temporal_basis_transformation_networkkeras.py`](https://github.com/ctn-waterloo/temporal_basis_transformation_network/blob/main/temporal_basis_transformation_network/keras.py#L25) for a more detailed description.
+Take a look at [`temporal_basis_transformation_networkkeras.py`](https://github.com/ctn-waterloo/temporal_basis_transformation_network/blob/main/temporal_basis_transformation_network/keras.py#L25) for a more detailed description.
 
 
 ## Dependencies
